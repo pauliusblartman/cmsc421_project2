@@ -50,7 +50,7 @@ long clear_queue(struct priority_queue_node* _head)
         return NO_ERR;
     else
     {
-        long rv = clear_queue(_head->m_nextPid == NULL);
+        long rv = clear_queue(_head->m_nextPid);
         free(_head->m_nextPid );
         _head->m_nextPid = NULL;
         return rv;
@@ -60,29 +60,78 @@ long clear_queue(struct priority_queue_node* _head)
 
 long clear_tree(struct bst_node* _head)
 {
-    if (_head->m_left == NULL)
-        return NO_ERR;
-    else
+    long rv = 0;
+    if (_head->m_left != NULL)
     {
-        long rv = clear_queue(_head->m_nextPid == NULL);
-        free(_head->m_nextPid );
-        _head->m_nextPid = NULL;
-        return;
+        rv = clear_tree(_head->m_left);
+        free(_head->m_left );
+        _head->m_left = NULL;
     }
+    if (_head->m_right != NULL)
+    {
+        long rv = clear_tree(_head->m_right);
+        free(_head->m_right );
+        _head->m_right = NULL;
+    }
+    clear_queue(_head->m_headOfQueue);
+    free(_head->m_headOfQueue);
+    _head->m_headOfQueue == NULL;
+    return;
 }
 
 /*Shuts down the queue system, deleting all existing queues and any PIDS contained therein. Returns 0 on success.*/
 long pqueue_shutdown(void)
 {
-
+    clear_tree(m_bst_head);
+    free(m_bst_head);
+    m_bst_head = NULL;
 }
 
-long pqueue_create(unsigned long priority):	Creates a new pqueue with the
+
+long insert_node(struct bst_node* _head, const unsigned long priority)
+{
+    struct bst_node** insertionNode;
+    if (_head->m_priority == priority)
+        return NO_ERR;
+    else if (_head->m_priority > priority)
+    {
+        if (_head->m_right != NULL)
+            return insert_node(_head->m_right,priority);
+        else
+            insertionNode = _head->m_right;
+    }
+    else
+    {
+        if (_head->m_left != NULL)
+            return insert_node(_head->m_left,priority);
+        else
+            insertionNode =  _head->m_left;
+    }
+
+    // create new node
+     *insertionNode = (struct bst_node*)calloc(1,sizeof(struct bst_node));
+     assert(*insertionNode != NULL);
+     (*insertionNode )->m_priority = NULL;
+     return 0;
+
+}
+/*Creates a new pqueue with the
 given priority if it does not already exist (no duplicates are allowed). Returns 0 on success
-or an appropriate error on failure.
-long pqueue_destroy(unsigned long priority):	Deletes the pqueue identified
+or an appropriate error on failure.*/
+long pqueue_create(unsigned long priority)
+{
+    return insert_node(m_bst_head, priority);
+}
+
+
+
+/*:	Deletes the pqueue identified
 by priority if it exists. If the queue has any PIDs stored in it, they should be deleted.
-Returns 0 on success or an appropriate error code on failure.
+Returns 0 on success or an appropriate error code on failure.*/
+long pqueue_destroy(unsigned long priority)
+{
+    
+}
 long pqueue_count(unsigned long priority):	Print the number of PIDS in the
 queue to the system log identified by priority if it exists. Returns an appropriate error code
 on failure.
